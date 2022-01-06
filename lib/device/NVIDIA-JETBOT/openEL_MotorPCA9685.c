@@ -40,8 +40,7 @@ extern "C" {
 #define ALLLED_OFF_L 0xFC
 #define ALLLED_OFF_H 0xFD
 
-//#define PWM_FREQUENCY 60                    //60Hz 16.7ms
-#define PWM_FREQUENCY 1600                    //1600Hz 16.7ms
+#define PWM_FREQUENCY 1600                    //1600Hz
 #define PWM_PULSE_WIDTH_MAX 12000           //12ms
 
 void PCA9685_init(float freq);
@@ -58,10 +57,7 @@ static const char *strFncLst[] = {
 	"HalInit",
 	"HalReInit",
 	"HalFinalize",
-	"HalAddObserver",
-	"HalRemoveObserver",
 	"HalGetProperty",
-	"HalGetTime",
 	"HalActuatorSetValue",
 	"HalActuatorGetValue"
 };
@@ -71,30 +67,19 @@ static const HALPROPERTY_T mot1_property = {
 	sizeof(strFncLst)/sizeof(char *)
 };
 
-typedef struct simMot_st {
-	HALCOMPONENT_T *hC;
-	HALOBSERVER_T *obs;
-	double posCmd,pos1,posSen;
-	HALFLOAT_T valueList[16];
-	int32_t numObs;
-	int32_t errCode;
-	uint8_t inPos;
-} SIM_MOT_T;
-SIM_MOT_T simMotAr[16];
+#define MAX_AXIS	2
 
-#define MAX_AXIS	15
-
-static double posCmdAr[MAX_AXIS],posSenAr[MAX_AXIS];
 static double velCmdAr[MAX_AXIS],velSenAr[MAX_AXIS];
 static HALFLOAT_T valueList[MAX_AXIS][16];
 
-
 static HALRETURNCODE_T fncInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
+#ifdef DEBUG
 	printf("HalInit MotorPCA9685 HAL-ID %d %d %d %d\n",
 			pHalComponent->halId.deviceKindId,
 			pHalComponent->halId.vendorId,
 			pHalComponent->halId.productId,
 			pHalComponent->halId.instanceId );
+#endif
 	((HALACTUATOR_T *)pHalComponent)->valueList = valueList[pHalComponent->halId.instanceId];
 
 	if (once) {
@@ -122,12 +107,16 @@ static HALRETURNCODE_T fncInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCm
 }
 
 static HALRETURNCODE_T fncReInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
+#ifdef DEBUG
 	printf("HalReInit MotorPCA9685\n");
+#endif
 	return HAL_OK;
 }
 
 static HALRETURNCODE_T fncFinalize(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
+#ifdef DEBUG
 	printf("HalFinalize MotorPCA9685\n");
+#endif
 	if (once == 0) {
 		close(i2c);
 		once = 1;
@@ -136,21 +125,13 @@ static HALRETURNCODE_T fncFinalize(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T 
 }
 
 static HALRETURNCODE_T fncAddObserver(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
-	int32_t idx = pHalComponent->halId.instanceId;
-	SIM_MOT_T *simMot = &simMotAr[idx];
-
-	simMot->numObs++;
-	simMot->obs = pHalComponent->observerList;
-	return HAL_OK;
+	printf("%s:HalAddObserver is not supported.\n", __FUNCTION__);
+	return HAL_ERROR;
 }
 
 static HALRETURNCODE_T fncRemoveObserver(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
-	int32_t idx = pHalComponent->halId.instanceId;
-	SIM_MOT_T *simMot = &simMotAr[idx];
-
-	simMot->numObs--;
-	simMot->obs = pHalComponent->observerList;
-	return HAL_OK;
+	printf("%s:HalRemoveObserver is not supported.\n", __FUNCTION__);
+	return HAL_ERROR;
 }
 
 static HALRETURNCODE_T fncGetProperty(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
@@ -159,10 +140,11 @@ static HALRETURNCODE_T fncGetProperty(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT
 }
 
 static HALRETURNCODE_T fncHalGetTime(HALCOMPONENT_T *halComponent,HAL_ARGUMENT_T *pCmd) {
+	printf("%s:HalGetTime is not supported.\n", __FUNCTION__);
 	return HAL_ERROR;
 }
 
-static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t id,HALFLOAT_T val) {
+static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
 #ifdef DEBUG
 	printf("%s:start\n", __FUNCTION__);
 #endif
@@ -170,7 +152,7 @@ static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 	int32_t idx = pHalComponent->halId.instanceId;
 
 	HALFLOAT_T velocity = 0;
-	int16_t pulseLen = 0;
+	uint16_t pulseLen = 0;
 
 	switch ( pCmd->FI.num ) {
 	default:
@@ -197,37 +179,60 @@ static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 		break;
 	case HAL_REQUEST_VELOCITY_CONTROL:
 		velSenAr[idx] = velCmdAr[idx];
-		velCmdAr[idx] = pCmd->FI.value; // Between -4095 and 4095
-#if 1
+		velCmdAr[idx] = pCmd->FI.value; // Between -15 * M_PI and 15 * M_PI
+		if (velCmdAr[idx]>0){
+			velocity = velCmdAr[idx];
+		} else {
+			velocity = -velCmdAr[idx];
+		}
+
+#ifdef DEBUG
 		printf("%s:velSenAr[%d]=%f\n", __FUNCTION__, idx, velSenAr[idx]);
 		printf("%s:velCmdAr[%d]=%f\n", __FUNCTION__, idx, velCmdAr[idx]);
 #endif
-		pulseLen = (int16_t)velCmdAr[idx];
+		if (velocity < 1 * M_PI){
+			pulseLen = 0;
+		}
+		if (velocity >= 1 * M_PI && velocity < 2 * M_PI ){
+			pulseLen = (uint16_t)(86 * (velocity - (1 * M_PI)) + 365);
+		}
+		if (velocity >= 2 * M_PI && velocity < 4 * M_PI ){
+			pulseLen = (uint16_t)(65 * (velocity - (2 * M_PI)) + 635);
+		}
+		if (velocity >= 4 * M_PI && velocity < 8 * M_PI ){
+			pulseLen = (uint16_t)(80 * (velocity - (4 * M_PI)) + 1045);
+		}
+		if (velocity >= 8 * M_PI && velocity < 15 * M_PI ){
+			pulseLen = (uint16_t)(93 * (velocity - (8 * M_PI)) + 2050);
+		}
+		if (velocity >= 15 * M_PI){
+			pulseLen = 4095;
+		}
 
 		if (idx == 1) { // Left Motor
-			if (pulseLen>0) {
+			if (velCmdAr[idx]>0) {
 				PCA9685_setPWM(10, 0, 4096);
 				PCA9685_setPWM(9, 4096, 0); //Forward
-			} else if (pulseLen<0){
+			} else if (velCmdAr[idx]<0){
 				PCA9685_setPWM(10, 4096, 0); //Backward
 				PCA9685_setPWM(9, 0, 4096);
 			} else {
 				PCA9685_setPWM(10, 0, 0); //Release
 				PCA9685_setPWM(9, 0, 0);
 			}
-			PCA9685_setPWM(8, 0, abs(pulseLen));
+			PCA9685_setPWM(8, 0, pulseLen);
 		} else if (idx == 2) { // Right Motor
-			if (pulseLen>0) {
+			if (velCmdAr[idx]>0) {
 				PCA9685_setPWM(11, 0, 4096);
 				PCA9685_setPWM(12, 4096, 0); //Forward
-			} else if (pulseLen<0){
+			} else if (velCmdAr[idx]<0){
 				PCA9685_setPWM(11, 4096, 0); //Backward
 				PCA9685_setPWM(12, 0, 4096);
 			} else {
 				PCA9685_setPWM(13, 0, 0); //Release
 				PCA9685_setPWM(12, 0, 0);
 			}
-			PCA9685_setPWM(13, 0, abs(pulseLen));
+			PCA9685_setPWM(13, 0, pulseLen);
 		} else {
 			printf("%s:instanceId must be 1 or 2!\n", __FUNCTION__);
 		}
@@ -242,7 +247,9 @@ static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 }
 
 static HALRETURNCODE_T fncGetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t id,HALFLOAT_T *pOutVal) {
+#ifdef DEBUG
 	printf("HalActuatorGet_MotorPCA9685\n");
+#endif
 	HALRETURNCODE_T retCode = HAL_ERROR;
 	int32_t idx = pHalComponent->halId.instanceId;
 
@@ -250,26 +257,40 @@ static HALRETURNCODE_T fncGetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 	default:
 		break;
 	case HAL_REQUEST_POSITION_COMMAND:
-		pCmd->FI.value = posSenAr[idx];
-		printf("%s:%f\n", __FUNCTION__, posSenAr[idx]);
-		retCode = HAL_OK;
+		pCmd->FI.value = 0;
+		printf("%s:HAL_REQUEST_POSITION_COMMAND is not supported.\n", __FUNCTION__);
+		retCode = HAL_ERROR;
 		break;
 	case HAL_REQUEST_POSITION_ACTUAL:
-		pCmd->FI.value = posSenAr[idx];
+		pCmd->FI.value = 0;
+		printf("%s:HAL_REQUEST_POSITION_ACTUAL is not supported.\n", __FUNCTION__);
+		retCode = HAL_ERROR;
+		break;
+	case HAL_REQUEST_VELOCITY_COMMAND:
+		pCmd->FI.value = velSenAr[idx];
+#ifdef DEBUG
 		printf("%s:%f\n", __FUNCTION__, posSenAr[idx]);
+#endif
+		retCode = HAL_OK;
+		break;
+	case HAL_REQUEST_VELOCITY_ACTUAL:
+		pCmd->FI.value = velSenAr[idx];
+#ifdef DEBUG
+		printf("%s:%f\n", __FUNCTION__, posSenAr[idx]);
+#endif
 		retCode = HAL_OK;
 		break;
 	}
 	return retCode;
 }
 
-/** センサー用API , エラー返信 */
 static HALRETURNCODE_T fncGetValLst(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t *pOutSize,HALFLOAT_T *pOutValLst) {
+	printf("%s:HalGetValueList is not supported.\n", __FUNCTION__);
 	return HAL_ERROR;
 }
 
-/** センサー用API , エラー返信 */
 static HALRETURNCODE_T fncGetTmValLst(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t *pOutSize,HALFLOAT_T *pOutValLst,int32_t *pOutTime) {
+	printf("%s:HalGetTimedValueList is not supported.\n", __FUNCTION__);
 	return HAL_ERROR;
 }
 
