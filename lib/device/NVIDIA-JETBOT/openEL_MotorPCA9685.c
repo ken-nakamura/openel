@@ -193,16 +193,16 @@ static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 			pulseLen = 0;
 		}
 		if (velocity >= 1 * M_PI && velocity < 2 * M_PI ){
-			pulseLen = (uint16_t)(86 * (velocity - (1 * M_PI)) + 365);
+			pulseLen = (uint16_t)(86 * (velocity - (1 * M_PI)) + 330);
 		}
 		if (velocity >= 2 * M_PI && velocity < 4 * M_PI ){
-			pulseLen = (uint16_t)(65 * (velocity - (2 * M_PI)) + 635);
+			pulseLen = (uint16_t)(68 * (velocity - (2 * M_PI)) + 600);
 		}
 		if (velocity >= 4 * M_PI && velocity < 8 * M_PI ){
-			pulseLen = (uint16_t)(80 * (velocity - (4 * M_PI)) + 1045);
+			pulseLen = (uint16_t)(61 * (velocity - (4 * M_PI)) + 1030);
 		}
 		if (velocity >= 8 * M_PI && velocity < 15 * M_PI ){
-			pulseLen = (uint16_t)(93 * (velocity - (8 * M_PI)) + 2050);
+			pulseLen = (uint16_t)(104 * (velocity - (8 * M_PI)) + 1800);
 		}
 		if (velocity >= 15 * M_PI){
 			pulseLen = 4095;
