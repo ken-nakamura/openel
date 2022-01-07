@@ -40,8 +40,7 @@ extern "C" {
 #define ALLLED_OFF_L 0xFC
 #define ALLLED_OFF_H 0xFD
 
-#define PWM_FREQUENCY 1600                    //1600Hz
-#define PWM_PULSE_WIDTH_MAX 12000           //12ms
+#define PWM_FREQUENCY 1526                    //Min:24Hz, Max:1526Hz
 
 void PCA9685_init(float freq);
 uint8_t PCA9685_read(uint8_t adr);
@@ -325,17 +324,17 @@ HAL_FNCTBL_T HalMotorPCA9685Tbl = {
 
 void PCA9685_init(float freq)
 {
-    float prescaleval = 25000000;
+    float osc_clock = 25000000;
 
     PCA9685_write(PCA9685_MODE1, 0x0);
     usleep(100000);//100ms
-    uint8_t prescale = 101;
+    uint8_t prescale = 0x03; // 0x03:1526 Hz, 0xFF:24 Hz
     uint8_t oldmode = PCA9685_read(PCA9685_MODE1);
     uint8_t newmode = (oldmode&0x7F) | 0x10;
     PCA9685_write(PCA9685_MODE1, newmode);
     PCA9685_write(PCA9685_PRESCALE, prescale);
     PCA9685_write(PCA9685_MODE1, oldmode);
-    sleep(5);
+    sleep(1);
     PCA9685_write(PCA9685_MODE1, oldmode | 0xa1);
 }
 

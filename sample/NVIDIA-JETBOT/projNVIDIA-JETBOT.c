@@ -27,23 +27,6 @@ HALTIMEROBSERVER_T tmObs102 = { { 0 }, cbNotifyTimer102 };
 int32_t event_count1,event_count2;
 HALFLOAT_T velVal1,velVal2;
 
-static void notify_event201a(HALCOMPONENT_T *halComponent, int32_t eventID) {
-	printf("notify_event201a : %d\n",eventID);
-}
-static void notify_error201a(HALCOMPONENT_T *halComponent, int32_t errorID) {
-	printf("notify_error201a : %d\n",errorID);
-}
-static void notify_event201b(HALCOMPONENT_T *halComponent, int32_t eventID) {
-	printf("notify_event201b : %d\n",eventID);
-}
-static void notify_error201b(HALCOMPONENT_T *halComponent, int32_t errorID) {
-	printf("notify_error201b : %d\n",errorID);
-	HalReInit(halComponent);
-}
-
-HALOBSERVER_T halObs201a = { {0},notify_event201a,notify_error201a };
-HALOBSERVER_T halObs201b = { {0},notify_event201b,notify_error201b };
-
 void outProperty(HALCOMPONENT_T *hC);
 
 int main(void) {
@@ -61,13 +44,6 @@ int main(void) {
 	outProperty(halMotor01);
 	outProperty(halMotor02);
 
-//	printf("motor01  getTime ret=%d\n", HalGetTime(halMotor01,&timeWk) );
-//	printf("motor02  getTime ret=%d\n", HalGetTime(halMotor02,&timeWk) );
-
-//	HalAddObserver(halMotor01,&halObs201a);
-//	HalAddObserver(halMotor01,&halObs201b);
-	flgObs = 1;
-
 	HalEventTimerSetEventPeriod(halTvtTm100,100);
 	HalEventTimerAddObserver(halTvtTm100,&tmObs101);
 	HalEventTimerAddObserver(halTvtTm100,&tmObs102);
@@ -78,11 +54,6 @@ int main(void) {
 		printf("timer %6d , %5d : ",event_count1,event_count2);
 		printf("%7.3lf %7.3lf\n",velVal1,velVal2);
 		fflush(stdout);
-		if ( (150 <= event_count1) && (1==flgObs) ) {
-//			HalRemoveObserver(halMotor01,&halObs201a);
-//			HalRemoveObserver(halMotor01,&halObs201b);
-			flgObs = 0;
-		}
 		if( 360 <= event_count1 ) break;
 	}
 
