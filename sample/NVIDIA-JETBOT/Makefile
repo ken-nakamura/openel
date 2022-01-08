@@ -31,12 +31,17 @@ TARGET_SOURCES = projNVIDIA-JETBOT.c
 CFLAGS +=
 
 .PHONY : all
-all : openel sample
+all : openel sample run_test
 
 .PHONY : sample
 sample : $(TARGET)
 	@echo "Linking $@"
 	$(CC) $(CFLAGS) $(INC_PATH) -L. -o $@ $(TARGET_SOURCES) -lopenel -lrt -lm -lpthread
+
+.PHONY : run_test
+run_test : run_test
+	@echo "Linking $@"
+	$(CC) $(CFLAGS) $(INC_PATH) -L. -o $@ run_test.c -lopenel -lrt -lm -lpthread
 
 .PHONY : openel
 openel : $(LIB_TARGET)
