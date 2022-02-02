@@ -48,8 +48,8 @@ void PCA9685_write(uint8_t adr, uint8_t dat);
 void PCA9685_pwmWrite(uint8_t ch, double pulseWidth_usec);
 void PCA9685_setPWM(uint8_t ch, uint16_t onTime, uint16_t offTime);
 
-static int i2c;
-int once = 1;
+static int32_t i2c;
+static int32_t once = 1;
 
 static const char strName[] = "MOTOR_PCA9685";
 static const char *strFncLst[] = {
@@ -73,7 +73,7 @@ static HALFLOAT_T valueList[MAX_AXIS][16];
 
 static HALRETURNCODE_T fncInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
 #ifdef DEBUG
-	printf("HalInit MotorPCA9685 HAL-ID %d %d %d %d\n",
+	printf("%s:%s:HAL-ID:0x%x 0x%x 0x%x 0x%x\n", __FILE__, __FUNCTION__,
 			pHalComponent->halId.deviceKindId,
 			pHalComponent->halId.vendorId,
 			pHalComponent->halId.productId,
@@ -84,17 +84,15 @@ static HALRETURNCODE_T fncInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCm
 	if (once) {
 		char i2cFileName[] = "/dev/i2c-1";
 		int driverAddress = 0x60;
-		int i;
-		double dfVal;
 
 		if((i2c = open(i2cFileName, O_RDWR)) < 0){
 			printf("I2C open err\n");
-			return -1;
+			return HAL_ERROR;
 		}
 
 		if(ioctl(i2c, I2C_SLAVE, driverAddress) < 0){
 			printf("ioctl err\n");
-			return -1;
+			return HAL_ERROR;
 		}
 
 		PCA9685_init(PWM_FREQUENCY);
@@ -107,14 +105,14 @@ static HALRETURNCODE_T fncInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCm
 
 static HALRETURNCODE_T fncReInit(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
 #ifdef DEBUG
-	printf("HalReInit MotorPCA9685\n");
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
 #endif
 	return HAL_OK;
 }
 
 static HALRETURNCODE_T fncFinalize(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
 #ifdef DEBUG
-	printf("HalFinalize MotorPCA9685\n");
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
 #endif
 	if (once == 0) {
 		close(i2c);
@@ -124,28 +122,31 @@ static HALRETURNCODE_T fncFinalize(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T 
 }
 
 static HALRETURNCODE_T fncAddObserver(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
-	printf("%s:HalAddObserver is not supported.\n", __FUNCTION__);
+	printf("%s:%s:HalAddObserver is not supported.\n", __FILE__, __FUNCTION__);
 	return HAL_ERROR;
 }
 
 static HALRETURNCODE_T fncRemoveObserver(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
-	printf("%s:HalRemoveObserver is not supported.\n", __FUNCTION__);
+	printf("%s:%s:HalRemoveObserver is not supported.\n", __FILE__, __FUNCTION__);
 	return HAL_ERROR;
 }
 
 static HALRETURNCODE_T fncGetProperty(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
+#ifdef DEBUG
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
+#endif
 	pHalComponent->property = (HALPROPERTY_T *)&mot1_property;
 	return HAL_OK;
 }
 
 static HALRETURNCODE_T fncHalGetTime(HALCOMPONENT_T *halComponent,HAL_ARGUMENT_T *pCmd) {
-	printf("%s:HalGetTime is not supported.\n", __FUNCTION__);
+	printf("%s:%s:HalGetTime is not supported.\n", __FILE__, __FUNCTION__);
 	return HAL_ERROR;
 }
 
 static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) {
 #ifdef DEBUG
-	printf("%s:start\n", __FUNCTION__);
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
 #endif
 	HALRETURNCODE_T retCode = HAL_ERROR;
 	int32_t idx = pHalComponent->halId.instanceId;
@@ -247,7 +248,7 @@ static HALRETURNCODE_T fncSetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 
 static HALRETURNCODE_T fncGetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t id,HALFLOAT_T *pOutVal) {
 #ifdef DEBUG
-	printf("HalActuatorGet_MotorPCA9685\n");
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
 #endif
 	HALRETURNCODE_T retCode = HAL_ERROR;
 	int32_t idx = pHalComponent->halId.instanceId;
@@ -284,12 +285,12 @@ static HALRETURNCODE_T fncGetVal(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *p
 }
 
 static HALRETURNCODE_T fncGetValLst(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t *pOutSize,HALFLOAT_T *pOutValLst) {
-	printf("%s:HalGetValueList is not supported.\n", __FUNCTION__);
+	printf("%s:%s:HalGetValueList is not supported.\n", __FILE__, __FUNCTION__);
 	return HAL_ERROR;
 }
 
 static HALRETURNCODE_T fncGetTmValLst(HALCOMPONENT_T *pHalComponent,HAL_ARGUMENT_T *pCmd) { //uint32_t *pOutSize,HALFLOAT_T *pOutValLst,int32_t *pOutTime) {
-	printf("%s:HalGetTimedValueList is not supported.\n", __FUNCTION__);
+	printf("%s:%s:HalGetTimedValueList is not supported.\n", __FILE__, __FUNCTION__);
 	return HAL_ERROR;
 }
 
