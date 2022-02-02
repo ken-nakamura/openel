@@ -9,7 +9,8 @@ C_LIB_SOURCES = \
 	$(LIB_DIR)/surface/openEL.c \
 	$(LIB_DIR)/device/$(COMPONENT)/openEL_platformLINUX.c \
 	$(LIB_DIR)/device/$(COMPONENT)/openEL_registryConfig.c \
-	$(LIB_DIR)/device/$(COMPONENT)/openEL_MotorPCA9685.c
+	$(LIB_DIR)/device/$(COMPONENT)/openEL_MotorPCA9685.c \
+	$(LIB_DIR)/device/$(COMPONENT)/openEL_SensorINA219.c
 
 C_OPTIMISATION_FLAGS = -Os
 
