@@ -97,7 +97,7 @@ HALCOMPONENT_T * HalCreate(int32_t deviceKindID, int32_t vendorID,int32_t produc
 	/* Initialize HalComponent */
 	pHalComponent = (HALCOMPONENT_T *)HalMalloc( pReg->szHalComponent );
 	pHalComponent->handle = HalIdxHandlerTbl;
-	pHalComponent->halId.deviceKindId = pReg->deviceKindID;
+	pHalComponent->halId.deviceKindId = deviceKindID;
 	pHalComponent->halId.vendorId = vendorID;
 	pHalComponent->halId.productId = productID;
 	pHalComponent->halId.instanceId = instanceID;
