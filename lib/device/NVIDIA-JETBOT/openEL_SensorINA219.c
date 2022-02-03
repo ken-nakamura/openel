@@ -395,17 +395,25 @@ void checkVoltage(int32_t idx) {
 		}
 	}
 
- 	/* The voltage is less than 11V. */
- 	if ( simSen->valueList[1] < 11 ) {
+ 	/* Charging completed. */
+ 	if ( simSen->valueList[1] > 12.3 ) {
 		obsWk = simSen->obs;
 		while ( 0 != obsWk ) {
 			obsWk->notify_event(simSen->hC,2);
 			obsWk = HalLinkedList_getNext(obsWk);
 		}
 	}
+ 	/* The voltage is less than 10V. */
+ 	if ( simSen->valueList[1] < 10 ) {
+		obsWk = simSen->obs;
+		while ( 0 != obsWk ) {
+			obsWk->notify_event(simSen->hC,3);
+			obsWk = HalLinkedList_getNext(obsWk);
+		}
+	}
 
-	/* Error(The voltage is less than 10V.) */
-	if ( simSen->valueList[1] < 10 ) {
+	/* Error(The voltage is less than 9V.) */
+	if ( simSen->valueList[1] < 9 ) {
 		simSen->errCode = 200+idx;
 		obsWk = simSen->obs;
 		while ( 0 != obsWk ) {

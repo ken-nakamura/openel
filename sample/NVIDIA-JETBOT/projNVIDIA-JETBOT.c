@@ -38,13 +38,15 @@ static void notify_event201a(HALCOMPONENT_T *halComponent, int32_t eventID) {
 	if(eventID == 1)
 		printf("Charging.\n");
 	if(eventID == 2)
-		printf("The voltage is less than 11V.\n");	
+		printf("Charging completed.\n");	
+	if(eventID == 3)
+		printf("The voltage is less than 10V.\n");	
 }
 
 static void notify_error201a(HALCOMPONENT_T *halComponent, int32_t errorID) {
 	printf("notify_error201a : %d\n",errorID);
 	if(errorID == 201)
-		printf("The voltage is less than 10V. Connect JetBot to a power source.\n");	
+		printf("The voltage is less than 9V. Connect JetBot to a power source.\n");	
 }
 
 HALOBSERVER_T halObs201a = { {0},notify_event201a,notify_error201a };
