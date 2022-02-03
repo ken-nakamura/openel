@@ -387,7 +387,7 @@ void checkVoltage(int32_t idx) {
 	HALOBSERVER_T *obsWk;
 
  	/* Charging. */
- 	if ( simSen->valueList[0] > 0 ) {
+ 	if ( simSen->valueList[2] > 1 ) {
 		obsWk = simSen->obs;
 		while ( 0 != obsWk ) {
 			obsWk->notify_event(simSen->hC,1);

@@ -38,12 +38,13 @@ static void notify_event201a(HALCOMPONENT_T *halComponent, int32_t eventID) {
 	if(eventID == 1)
 		printf("Charging.\n");
 	if(eventID == 2)
-		printf("The voltage is less than 11V\n");	
+		printf("The voltage is less than 11V.\n");	
 }
+
 static void notify_error201a(HALCOMPONENT_T *halComponent, int32_t errorID) {
 	printf("notify_error201a : %d\n",errorID);
 	if(errorID == 201)
-		printf("The voltage is less than 10V\n");	
+		printf("The voltage is less than 10V. Connect JetBot to a power source.\n");	
 }
 
 HALOBSERVER_T halObs201a = { {0},notify_event201a,notify_error201a };
@@ -125,8 +126,8 @@ void cbNotifyTimer101(HALEVENTTIMER_T *eventTimer) {
 	event_count1++;
 	ph = (HALFLOAT_T)event_count1/360*2*M_PI;
 	velocity = 15 * M_PI * sin(ph); // Between -15*M_PI and 15*M_PI [rad/s]
-	HalActuatorSetValue(halMotor01,HAL_REQUEST_VELOCITY_CONTROL,velocity);
-	HalActuatorSetValue(halMotor02,HAL_REQUEST_VELOCITY_CONTROL,velocity);
+//	HalActuatorSetValue(halMotor01,HAL_REQUEST_VELOCITY_CONTROL,velocity);
+//	HalActuatorSetValue(halMotor02,HAL_REQUEST_VELOCITY_CONTROL,velocity);
 }
 
 void cbNotifyTimer102(HALEVENTTIMER_T *eventTimer) {
