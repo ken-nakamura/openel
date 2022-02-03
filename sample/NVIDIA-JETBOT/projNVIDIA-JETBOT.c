@@ -126,8 +126,8 @@ void cbNotifyTimer101(HALEVENTTIMER_T *eventTimer) {
 	event_count1++;
 	ph = (HALFLOAT_T)event_count1/360*2*M_PI;
 	velocity = 15 * M_PI * sin(ph); // Between -15*M_PI and 15*M_PI [rad/s]
-//	HalActuatorSetValue(halMotor01,HAL_REQUEST_VELOCITY_CONTROL,velocity);
-//	HalActuatorSetValue(halMotor02,HAL_REQUEST_VELOCITY_CONTROL,velocity);
+	HalActuatorSetValue(halMotor01,HAL_REQUEST_VELOCITY_CONTROL,velocity);
+	HalActuatorSetValue(halMotor02,HAL_REQUEST_VELOCITY_CONTROL,velocity);
 }
 
 void cbNotifyTimer102(HALEVENTTIMER_T *eventTimer) {
